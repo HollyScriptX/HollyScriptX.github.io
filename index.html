@@ -119,16 +119,14 @@
     overflow: hidden;
   }
 
-  /* ambient gradient orb */
-  #home::before {
-    content: '';
+  /* canvas handles the animated orbs */
+  #heroCanvas {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -60%);
-    width: 700px;
-    height: 500px;
-    background: radial-gradient(ellipse at center, rgba(204,31,31,0.12) 0%, transparent 70%);
+    inset: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
+    z-index: 0;
   }
 
   /* subtle grid */
@@ -358,7 +356,7 @@
   /* script cards */
   .script-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
   }
 
@@ -366,45 +364,49 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 1.25rem;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
     transition: border-color 0.15s, transform 0.15s;
     position: relative;
-    overflow: hidden;
   }
 
-  .scard::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--red), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
+  .scard:hover { border-color: #2a2a2a; transform: translateY(-2px); }
+
+  /* thumbnail */
+  .scard-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+    background: #111;
   }
 
-  .scard:hover { border-color: #222; transform: translateY(-2px); }
-  .scard:hover::before { opacity: 1; }
+  .scard-body {
+    padding: 0.9rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    flex: 1;
+  }
 
   .scard-top {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.5rem;
   }
 
   .scard-name {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     letter-spacing: -0.01em;
   }
 
   .tier {
     font-family: var(--mono);
-    font-size: 0.6rem;
-    padding: 0.2rem 0.5rem;
+    font-size: 0.58rem;
+    padding: 0.18rem 0.48rem;
     border-radius: 4px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -413,58 +415,29 @@
   }
 
   .tier-free { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.22); }
-  .tier-vip  { background: rgba(204,31,31,0.12); color: #f87171; border: 1px solid rgba(204,31,31,0.28); }
+  .tier-key  { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
 
-  .scard-desc {
-    font-size: 0.82rem;
-    color: var(--soft);
-    line-height: 1.55;
-    flex: 1;
-  }
-
-  .scard-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-
-  .stag {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    color: var(--muted);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 0.12rem 0.42rem;
-  }
-
-  .scard-foot {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.2rem;
-  }
-
-  .scard-game {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    flex: 1;
-  }
-
-  .copy-btn {
+  .open-btn {
+    display: block;
+    width: 100%;
     background: var(--red);
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     color: #fff;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    font-weight: 500;
-    padding: 0.42rem 0.85rem;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.6rem;
     cursor: pointer;
+    text-align: center;
     transition: background 0.15s, transform 0.1s;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: auto;
   }
 
-  .copy-btn:hover { background: #e02222; }
-  .copy-btn:active { transform: scale(0.96); }
-  .copy-btn.copied { background: #166534; color: #4ade80; }
+  .open-btn:hover { background: #e02222; }
+  .open-btn:active { transform: scale(0.97); }
 
   .empty-state {
     display: none;
@@ -653,10 +626,11 @@
 
   <!-- HOME -->
   <section id="home">
+    <canvas id="heroCanvas"></canvas>
     <div class="home-inner">
       <div class="home-tag">Roblox Script Server</div>
-      <h1 class="home-title">HOLLY<br><span class="red">SCRIPT</span>X</h1>
-      <p class="home-sub">Premium and free scripts for the games you play. Updated. Working. No nonsense.</p>
+      <h1 class="home-title">HOLLY<span class="red">SCRIPT</span>X</h1>
+      <p class="home-sub">For Hackers, By Hackers.</p>
       <div class="home-cta">
         <a href="#scripts" class="btn-primary">Browse Scripts</a>
         <a href="#faq" class="btn-ghost">How it works</a>
@@ -680,7 +654,7 @@
         <div class="filters">
           <button class="filter-btn active" data-filter="all">All</button>
           <button class="filter-btn" data-filter="free">Free</button>
-          <button class="filter-btn" data-filter="vip">VIP</button>
+          <button class="filter-btn" data-filter="key">Key System</button>
         </div>
       </div>
 
@@ -764,30 +738,79 @@
 <div class="toast" id="toast">Script copied to clipboard</div>
 
 <script>
+  // ── ANIMATED RED ORBS ──
+  (function() {
+    const canvas = document.getElementById("heroCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+      const section = document.getElementById("home");
+      canvas.width  = section.offsetWidth;
+      canvas.height = section.offsetHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    const orbs = [
+      { x: 0.5,  y: 0.4,  r: 0.45, dx:  0.00018, dy:  0.00012, alpha: 0.13 },
+      { x: 0.25, y: 0.65, r: 0.32, dx: -0.00014, dy: -0.00009, alpha: 0.09 },
+      { x: 0.78, y: 0.3,  r: 0.28, dx:  0.00011, dy:  0.00016, alpha: 0.08 },
+      { x: 0.15, y: 0.25, r: 0.22, dx:  0.00009, dy: -0.00013, alpha: 0.06 },
+    ];
+
+    function draw(ts) {
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      orbs.forEach(o => {
+        o.x += o.dx;
+        o.y += o.dy;
+        // soft bounce at edges
+        if (o.x < 0.1 || o.x > 0.9) o.dx *= -1;
+        if (o.y < 0.1 || o.y > 0.9) o.dy *= -1;
+
+        const cx = o.x * W;
+        const cy = o.y * H;
+        const radius = o.r * Math.min(W, H);
+
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        g.addColorStop(0,   `rgba(204,31,31,${o.alpha})`);
+        g.addColorStop(0.5, `rgba(160,20,20,${o.alpha * 0.4})`);
+        g.addColorStop(1,   `rgba(0,0,0,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+  })();
+
   // ── DATA ──
   const SCRIPTS = [
     {
-      name: "Doors Script",
+      name: "Doors",
       game: "Doors",
-      desc: "Full Doors script. Entity ESP, item highlights, and survival assists.",
-      tags: ["esp", "survival", "entities"],
+      thumb: "https://tr.rbxcdn.com/180DAY-72681bce89c73d5e3fc04b9b04f0e9d3/768/432/Image/Webp/noFilter",
       tier: "free",
       script: `loadstring(game:HttpGet("https://raw.githubusercontent.com/saosdkjiqwdjuqjudidw/doors.lua/refs/heads/main/DoorsScripts"))()`,
     },
     {
       name: "Murder Mystery 2",
       game: "Murder Mystery 2",
-      desc: "MM2 script hub. Player ESP, murderer reveal, and coin farm. Keyless.",
-      tags: ["esp", "murderer", "coin farm"],
+      thumb: "https://tr.rbxcdn.com/180DAY-53e4e98e25954c3c7cb6b41d88b52fd1/768/432/Image/Webp/noFilter",
       tier: "free",
       script: `getgenv().SCRIPT_KEY = "KEYLESS"\nloadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/948da38862d0b306aab861c4f6338962aed091c4b9f65231f892399ba78cb4a0/download"))()`,
     },
     {
-      name: "Ink Game Script",
+      name: "Ink Game",
       game: "Ink Game",
-      desc: "HollyScriptX exclusive. Requires a VIP key — get it in the server.",
-      tags: ["key system", "exclusive", "hub"],
-      tier: "vip",
+      thumb: "https://tr.rbxcdn.com/180DAY-b0e0f3f3f8f3f3f3f3f3f3f3f3f3f3f3/768/432/Image/Webp/noFilter",
+      tier: "key",
       script: `loadstring(game:HttpGet("https://raw.githubusercontent.com/saosdkjiqwdjuqjudidw/HollyScriptX/refs/heads/main/main.lua"))()`,
     },
   ];
@@ -800,17 +823,15 @@
     const card = document.createElement("div");
     card.className = "scard";
     card.dataset.tier = s.tier;
-    card.dataset.search = `${s.name} ${s.game} ${s.tags.join(" ")} ${s.desc}`.toLowerCase();
+    card.dataset.search = `${s.name} ${s.game}`.toLowerCase();
     card.innerHTML = `
-      <div class="scard-top">
-        <div class="scard-name">${s.name}</div>
-        <span class="tier tier-${s.tier}">${s.tier === "vip" ? "VIP" : "Free"}</span>
-      </div>
-      <div class="scard-desc">${s.desc}</div>
-      <div class="scard-tags">${s.tags.map(t => `<span class="stag">${t}</span>`).join("")}</div>
-      <div class="scard-foot">
-        <div class="scard-game">${s.game}</div>
-        <button class="copy-btn" data-script="${encodeURIComponent(s.script)}">Copy</button>
+      <img class="scard-thumb" src="${s.thumb}" alt="${s.name}" onerror="this.style.background='#1a1a1a';this.removeAttribute('src')">
+      <div class="scard-body">
+        <div class="scard-top">
+          <div class="scard-name">${s.name}</div>
+          <span class="tier tier-${s.tier}">${s.tier === "key" ? "Key System" : "Free"}</span>
+        </div>
+        <button class="open-btn" data-script="${encodeURIComponent(s.script)}">Open</button>
       </div>
     `;
     return card;
@@ -851,12 +872,17 @@
   const toast = document.getElementById("toast");
 
   grid.addEventListener("click", e => {
-    const btn = e.target.closest(".copy-btn");
+    const btn = e.target.closest(".open-btn");
     if (!btn) return;
     navigator.clipboard.writeText(decodeURIComponent(btn.dataset.script)).then(() => {
       btn.textContent = "Copied!";
-      btn.classList.add("copied");
-      setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+      btn.style.background = "#166534";
+      btn.style.color = "#4ade80";
+      setTimeout(() => {
+        btn.textContent = "Open";
+        btn.style.background = "";
+        btn.style.color = "";
+      }, 2000);
       clearTimeout(toastTimer);
       toast.classList.add("show");
       toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
