@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HollyScriptX — Roblox Script Server</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0a0f;
+    --surface:   #111118;
+    --card:      #16161f;
+    --border:    #1e1e2e;
+    --accent:    #7c6aff;
+    --accent2:   #a78bfa;
+    --green:     #4ade80;
+    --red:       #f87171;
+    --yellow:    #fbbf24;
+    --text:      #e2e0f0;
+    --muted:     #6b6a80;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Space Grotesk', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--accent2);
+    letter-spacing: -0.02em;
+  }
+
+  .logo span { color: var(--muted); }
+
+  .header-badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 4rem 2rem 3rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent2);
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 480px;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 2rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+    font-family: var(--mono);
+  }
+
+  input[type="search"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 0.65rem 1rem 0.65rem 2.4rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="search"]:focus { border-color: var(--accent); }
+  input[type="search"]::placeholder { color: var(--muted); }
+
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.45rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .stat {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .stat strong { color: var(--accent2); }
+
+  .result-count {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: border-color 0.15s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .card:hover { border-color: #2a2a40; transform: translateY(-2px); }
+  .card:hover::before { opacity: 1; }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .badge-free    { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+  .badge-paid    { background: rgba(251,191,36,0.12); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+  .badge-vip     { background: rgba(124,106,255,0.15); color: var(--accent2); border: 1px solid rgba(124,106,255,0.3); }
+
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+  }
+
+  .card-footer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.25rem;
+  }
+
+  .game-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    flex: 1;
+  }
+
+  .copy-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.03em;
+  }
+
+  .copy-btn:hover { background: #6b5ce7; }
+  .copy-btn:active { transform: scale(0.97); }
+  .copy-btn.copied { background: var(--green); color: #0a0a0f; }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    display: none;
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 1rem;
+  }
+
+  .empty-icon {
+    font-family: var(--mono);
+    font-size: 2rem;
+    color: var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .empty p { color: var(--muted); font-size: 0.9rem; }
+  .empty strong { color: var(--text); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 0.65rem 1.1rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--green);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    header { padding: 0 1rem; }
+    .hero, .controls, .stats-bar, .grid { padding-left: 1rem; padding-right: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Holly<span>//</span>ScriptX</div>
+  <div class="header-badge">script server</div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">// roblox scripts</div>
+  <h1>Scripts that <em>actually work.</em></h1>
+  <p>Browse, filter, and copy scripts for your favorite Roblox games. Updated regularly.</p>
+</section>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">//</span>
+    <input type="search" id="searchInput" placeholder="Search scripts or games..." autocomplete="off">
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="free">Free</button>
+    <button class="filter-btn" data-filter="paid">Paid</button>
+    <button class="filter-btn" data-filter="vip">VIP</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat">Scripts: <strong id="totalCount">0</strong></div>
+  <div class="stat">Games: <strong id="gameCount">0</strong></div>
+  <div class="result-count" id="resultCount"></div>
+</div>
+
+<div class="grid" id="scriptGrid">
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">[ ]</div>
+    <p>No scripts match <strong id="emptyQuery"></strong></p>
+  </div>
+</div>
+
+<div class="toast" id="toast">// copied to clipboard</div>
+
+<script>
+  const SCRIPTS = [
+    {
+      name: "Infinite Yield",
+      game: "All Games",
+      desc: "Full admin command script. Over 300 commands for exploiting any game.",
+      tags: ["admin", "commands", "universal"],
+      tier: "free",
+      script: `loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infinite-yield/master/source'))()`,
+    },
+    {
+      name: "Dark Dex Explorer",
+      game: "All Games",
+      desc: "Game explorer and remote spy. Inspect any game's instances and remotes.",
+      tags: ["explorer", "remote spy", "universal"],
+      tier: "free",
+      script: `loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()`,
+    },
+    {
+      name: "Blox Fruits — Auto Farm",
+      game: "Blox Fruits",
+      desc: "Auto farm mastery, fruits, and boss kills. Supports all seas.",
+      tags: ["auto farm", "boss", "mastery"],
+      tier: "free",
+      script: `-- Replace with your Blox Fruits auto farm script\nprint("Blox Fruits Auto Farm loaded")`,
+    },
+    {
+      name: "Blox Fruits — Fruit Sniper",
+      game: "Blox Fruits",
+      desc: "Notifies and teleports you to any fruit that spawns on the map instantly.",
+      tags: ["fruit", "teleport", "sniper"],
+      tier: "vip",
+      script: `-- VIP only. Join the server to unlock.\nprint("Fruit Sniper — VIP")`,
+    },
+    {
+      name: "Pet Sim 99 — Auto Collect",
+      game: "Pet Simulator 99",
+      desc: "Auto collect coins, chests, and eggs. Includes speed and jump boosts.",
+      tags: ["auto collect", "eggs", "speed"],
+      tier: "free",
+      script: `-- Replace with your Pet Sim 99 script\nprint("Pet Sim 99 Auto Collect loaded")`,
+    },
+    {
+      name: "Adopt Me — Dupe Tool",
+      game: "Adopt Me",
+      desc: "Item duplication exploit. Use in a private server.",
+      tags: ["dupe", "items", "private server"],
+      tier: "paid",
+      script: `-- Paid script. Purchase access in the server.\nprint("Adopt Me Dupe — Paid")`,
+    },
+    {
+      name: "Murder Mystery 2 — ESP",
+      game: "Murder Mystery 2",
+      desc: "Player ESP showing murderer, sheriff, and knife location at all times.",
+      tags: ["esp", "wallhack", "murderer"],
+      tier: "free",
+      script: `-- Replace with your MM2 ESP script\nprint("MM2 ESP loaded")`,
+    },
+    {
+      name: "Arsenal — Aimbot",
+      game: "Arsenal",
+      desc: "Silent aim with FOV circle, prediction, and team check built in.",
+      tags: ["aimbot", "silent aim", "fov"],
+      tier: "vip",
+      script: `-- VIP only. Join the server to unlock.\nprint("Arsenal Aimbot — VIP")`,
+    },
+    {
+      name: "Brookhaven — Fly Script",
+      game: "Brookhaven",
+      desc: "Smooth fly script with speed control. Works after every update.",
+      tags: ["fly", "speed", "movement"],
+      tier: "free",
+      script: `local p = game.Players.LocalPlayer\nlocal char = p.Character or p.CharacterAdded:Wait()\nlocal hum = char:WaitForChild("Humanoid")\nhum.WalkSpeed = 50\n-- fly logic here`,
+    },
+    {
+      name: "Da Hood — Silent Aim",
+      game: "Da Hood",
+      desc: "Bullet correction silent aim. High hit rate, low detection.",
+      tags: ["aimbot", "silent aim", "pvp"],
+      tier: "paid",
+      script: `-- Paid script. Purchase access in the server.\nprint("Da Hood Silent Aim — Paid")`,
+    },
+    {
+      name: "Universal Fly",
+      game: "All Games",
+      desc: "Works in any game. Toggle with F key. Adjustable speed.",
+      tags: ["fly", "universal", "toggle"],
+      tier: "free",
+      script: `local speed = 50\nlocal flying = false\nlocal uis = game:GetService("UserInputService")\nuis.InputBegan:Connect(function(i)\n  if i.KeyCode == Enum.KeyCode.F then\n    flying = not flying\n    -- toggle flight logic\n  end\nend)`,
+    },
+    {
+      name: "Speed Hub X",
+      game: "All Games",
+      desc: "Universal hub with speed, jump, noclip, and ESP tabs for any game.",
+      tags: ["hub", "universal", "noclip", "esp"],
+      tier: "vip",
+      script: `-- VIP only. Join the server to unlock.\nprint("Speed Hub X — VIP")`,
+    },
+  ];
+
+  const grid = document.getElementById("scriptGrid");
+  const searchInput = document.getElementById("searchInput");
+  const filterBtns = document.querySelectorAll(".filter-btn");
+  const emptyState = document.getElementById("emptyState");
+  const emptyQuery = document.getElementById("emptyQuery");
+  const resultCount = document.getElementById("resultCount");
+  const toast = document.getElementById("toast");
+
+  let activeFilter = "all";
+  let toastTimer = null;
+
+  // stats
+  const games = new Set(SCRIPTS.map(s => s.game));
+  document.getElementById("totalCount").textContent = SCRIPTS.length;
+  document.getElementById("gameCount").textContent = games.size;
+
+  function tierBadge(tier) {
+    const map = { free: "Free", paid: "Paid", vip: "VIP" };
+    return `<span class="badge badge-${tier}">${map[tier]}</span>`;
+  }
+
+  function tagPills(tags) {
+    return tags.map(t => `<span class="tag">${t}</span>`).join("");
+  }
+
+  function buildCard(s) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.tier = s.tier;
+    card.dataset.search = `${s.name} ${s.game} ${s.tags.join(" ")} ${s.desc}`.toLowerCase();
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-name">${s.name}</div>
+        ${tierBadge(s.tier)}
+      </div>
+      <div class="card-desc">${s.desc}</div>
+      <div class="card-meta">${tagPills(s.tags)}</div>
+      <div class="card-footer">
+        <div class="game-label">// ${s.game}</div>
+        <button class="copy-btn" data-script="${encodeURIComponent(s.script)}">Copy</button>
+      </div>
+    `;
+    return card;
+  }
+
+  // render all cards once
+  SCRIPTS.forEach(s => grid.appendChild(buildCard(s)));
+  grid.appendChild(emptyState);
+
+  function applyFilters() {
+    const query = searchInput.value.toLowerCase().trim();
+    const cards = grid.querySelectorAll(".card:not(.empty)");
+    let visible = 0;
+
+    cards.forEach(card => {
+      const tierMatch = activeFilter === "all" || card.dataset.tier === activeFilter;
+      const searchMatch = !query || card.dataset.search.includes(query);
+      const show = tierMatch && searchMatch;
+      card.style.display = show ? "" : "none";
+      if (show) visible++;
+    });
+
+    emptyState.style.display = visible === 0 ? "block" : "none";
+    emptyQuery.textContent = `"${query || activeFilter}"`;
+    resultCount.textContent = visible === SCRIPTS.length ? "" : `${visible} result${visible !== 1 ? "s" : ""}`;
+  }
+
+  searchInput.addEventListener("input", applyFilters);
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      applyFilters();
+    });
+  });
+
+  // copy handler — event delegation
+  grid.addEventListener("click", e => {
+    const btn = e.target.closest(".copy-btn");
+    if (!btn) return;
+    const script = decodeURIComponent(btn.dataset.script);
+    navigator.clipboard.writeText(script).then(() => {
+      btn.textContent = "Copied!";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.textContent = "Copy";
+        btn.classList.remove("copied");
+      }, 2000);
+
+      clearTimeout(toastTimer);
+      toast.classList.add("show");
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+    });
+  });
+</script>
+</body>
+</html>
